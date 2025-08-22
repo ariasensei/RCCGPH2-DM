@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RCCG Divine Mercy Planner | Sept 2025 - Aug 2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .focus-soft:focus { outline: none; box-shadow: 0 0 0 3px rgba(34,197,94,0.35); border-color: rgba(34,197,94,1); background: #ffffffcc; }
+    .fade-in { animation: fade .3s ease; } @keyframes fade { from{opacity:.0; transform:translateY(4px)} to{opacity:1; transform:translateY(0)} }
+    .backdrop-blur { backdrop-filter: saturate(180%) blur(10px); }
+    .tag { cursor: grab; } .tag:active { cursor: grabbing; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-white to-green-50 text-gray-800">
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-green-100">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <!-- Circular crest with cross -->
+        <div class="w-11 h-11 rounded-full bg-gradient-to-br from-green-600 to-green-500 shadow-md flex items-center justify-center">
+          <svg viewBox="0 0 64 64" class="w-8 h-8" aria-label="Cross logo">
+            <!-- outer ring for subtle detail -->
+            <circle cx="32" cy="32" r="29" fill="none" stroke="white" stroke-width="2" opacity="0.9"></circle>
+            <!-- Traditional Christian Cross -->
+            <path fill="white" d="
+              M30 12 L34 12 L34 26 L44 26 L44 30 L34 30 L34 52 L30 52 L30 30 L20 30 L20 26 L30 26 Z
+            " />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl md:text-2xl font-extrabold text-green-700 leading-tight">
+            The Redeemed Christian Church of God — Divine Mercy
+          </h1>
+          <p class="text-sm text-green-700/80 -mt-0.5">
+            "Jesus is the same yesterday, today, and forever" — Hebrews 13:8
+          </p>
+        </div>
+      </div>
+      <div class="hidden md:flex items-center gap-3">
+        <button id="prevMonth" class="px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition">⟵ Prev</button>
+        <button id="todayBtn" class="px-3 py-2 rounded-lg bg-white text-green-700 border border-green-200 hover:border-green-300 hover:bg-green-50 transition">Today</button>
+        <button id="nextMonth" class="px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition">Next ⟶</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Top Controls -->
+    <section class="mb-6 grid md:grid-cols-3 gap-4">
+      <!-- Date range + Month picker -->
+      <div class="bg-white rounded-2xl border border-green-100 p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-xs uppercase tracking-wider text-green-700/70">Planning Window</div>
+            <div class="font-semibold text-green-700">Sept 2025 — Aug 2026</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="rangeStartBtn" class="text-xs px-2 py-1 rounded-md bg-green-50 text-green-700 border border-green-200 hover:bg-green-100">Start</button>
+            <button id="rangeEndBtn" class="text-xs px-2 py-1 rounded-md bg-green-50 text-green-700 border border-green-200 hover:bg-green-100">End</button>
+          </div>
+        </div>
+        <div class="mt-3">
+          <label class="block text-sm text-gray-600 mb-1">Jump to Month</label>
+          <select id="monthSelect" class="w-full border border-green-200 rounded-lg px-3 py-2 focus-soft bg-white"></select>
+        </div>
+      </div>
+
+      <!-- Category legend and color assignment -->
+      <div class="bg-white rounded-2xl border border-green-100 p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <div class="text-sm font-semibold text-green-700">Categories & Colors</div>
+          <button id="resetColors" class="text-xs px-2 py-1 rounded-md bg-white text-green-700 border border-green-200 hover:bg-green-50">Reset</button>
+        </div>
+        <div id="legend" class="grid grid-cols-2 gap-3 text-sm"></div>
+        <p class="mt-3 text-xs text-gray-500">Drag a tag onto a day to add it. Click a tag inside a day to edit or remove.</p>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="bg-white rounded-2xl border border-green-100 p-4 shadow-sm">
+        <div class="text-sm font-semibold text-green-700 mb-2">Quick Actions</div>
+        <div class="flex flex-wrap gap-2">
+          <button id="copyMonth" class="px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition">Copy Month</button>
+          <button id="pasteMonth" class="px-3 py-2 rounded-lg bg-white text-green-700 border border-green-200 hover:bg-green-50">Paste Month</button>
+          <button id="clearMonth" class="px-3 py-2 rounded-lg bg-white text-green-700 border border-green-200 hover:bg-green-50">Clear Month</button>
+          <button id="exportJSON" class="px-3 py-2 rounded-lg bg-white text-green-700 border border-green-200 hover:bg-green-50">Export</button>
+          <button id="importJSON" class="px-3 py-2 rounded-lg bg-white text-green-700 border border-green-200 hover:bg-green-50">Import</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Auto-assign info -->
+    <section class="mb-6 bg-green-50 border border-green-100 rounded-2xl p-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div class="flex items-start gap-3">
+          <div class="w-9 h-9 rounded-full bg-green-600 text-white flex items-center justify-center">ℹ️</div>
+          <div>
+            <div class="font-semibold text-green-800">Ministration Schedule</div>
+            <p class="text-sm text-green-800/80">
+              Set speakers and roles that repeat weekly. You can type names, copy, paste, cut, and delete anytime.
+            </p>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button id="autoFillMonth" class="px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Auto-fill This Month</button>
+          <button id="clearWeekly" class="px-3 py-2 rounded-lg bg-white text-green-700 border border-green-200 hover:bg-green-50">Clear Weekly</button>
+        </div>
+      </div>
+      <div class="mt-4 grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="bg-white border border-green-100 rounded-xl p-3">
+          <div class="text-sm font-semibold text-green-700 mb-2">Wednesday — Digging Deep Speaker</div>
+          <div contenteditable="true" id="tmpl_wed" class="min-h-[42px] border border-green-200 rounded-lg px-3 py-2 focus-soft" placeholder="Type speaker name…"></div>
+        </div>
+        <div class="bg-white border border-green-100 rounded-xl p-3">
+          <div class="text-sm font-semibold text-green-700 mb-2">Thursday — Faith Clinic Speaker</div>
+          <div contenteditable="true" id="tmpl_thu" class="min-h-[42px] border border-green-200 rounded-lg px-3 py-2 focus-soft" placeholder="Type speaker name…"></div>
+        </div>
+        <div class="bg-white border border-green-100 rounded-xl p-3">
+          <div class="text-sm font-semibold text-green-700 mb-2">Sunday — Workers' Prayer</div>
+          <div contenteditable="true" id="tmpl_workers" class="min-h-[42px] border border-green-200 rounded-lg px-3 py-2 focus-soft" placeholder="Type details…"></div>
+        </div>
+        <div class="bg-white border border-green-100 rounded-xl p-3">
+          <div class="text-sm font-semibold text-green-700 mb-2">Sunday — Sunday School Teacher</div>
+          <div contenteditable="true" id="tmpl_teacher" class="min-h-[42px] border border-green-200 rounded-lg px-3 py-2 focus-soft" placeholder="Type name…"></div>
+        </div>
+        <div class="bg-white border border-green-100 rounded-xl p-3">
+          <div class="text-sm font-semibold text-green-700 mb-2">Sunday — Presider</div>
+          <div contenteditable="true" id="tmpl_presider" class="min-h-[42px] border border-green-200 rounded-lg px-3 py-2 focus-soft" placeholder="Type name…"></div>
+        </div>
+        <div class="bg-white border border-green-100 rounded-xl p-3">
+          <div class="text-sm font-semibold text-green-700 mb-2">Sunday — Sunday Service Speaker</div>
+          <div contenteditable="true" id="tmpl_speaker" class="min-h-[42px] border border-green-200 rounded-lg px-3 py-2 focus-soft" placeholder="Type name…"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Calendar -->
+    <section class="bg-white rounded-2xl border border-green-100 p-4 md:p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <button id="mPrev" class="md:hidden px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">⟵</button>
+          <h2 id="monthLabel" class="text-lg md:text-xl font-extrabold text-green-700"></h2>
+          <button id="mNext" class="md:hidden px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">⟶</button>
+        </div>
+        <div class="hidden md:flex items-center gap-2">
+          <button id="printBtn" class="px-3 py-2 rounded-lg bg-white text-green-700 border border-green-200 hover:bg-green-50">Print</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-7 gap-2 text-xs font-semibold text-green-800/80 mb-2">
+        <div class="text-center">Sun</div>
+        <div class="text-center">Mon</div>
+        <div class="text-center">Tue</div>
+        <div class="text-center">Wed</div>
+        <div class="text-center">Thu</div>
+        <div class="text-center">Fri</div>
+        <div class="text-center">Sat</div>
+      </div>
+
+      <div id="calendarGrid" class="grid grid-cols-7 gap-2"></div>
+      <p class="mt-3 text-xs text-gray-500">Tip: Double-click inside any day to add a note. Drag tags from the legend into a day to categorize.</p>
+    </section>
+
+    <!-- Notes / Monthly Summary -->
+    <section class="mt-6 grid md:grid-cols-2 gap-4">
+      <div class="bg-white rounded-2xl border border-green-100 p-4">
+        <div class="flex items-center justify-between mb-2">
+          <div class="text-sm font-semibold text-green-700">Monthly Notes</div>
+          <div class="flex gap-2">
+            <button id="copyNotes" class="px-3 py-1.5 rounded-lg bg-white text-green-700 border border-green-200 hover:bg-green-50 text-sm">Copy</button>
+            <button id="clearNotes" class="px-3 py-1.5 rounded-lg bg-white text-green-700 border border-green-200 hover:bg-green-50 text-sm">Clear</button>
+          </div>
+        </div>
+        <div id="monthlyNotes" contenteditable="true" class="min-h-[120px] border border-green-200 rounded-lg px-3 py-2 focus-soft" placeholder="Type notes for this month…"></div>
+      </div>
+      <div class="bg-white rounded-2xl border border-green-100 p-4">
+        <div class="text-sm font-semibold text-green-700 mb-2">Quick Add to Selected Day</div>
+        <div class="grid grid-cols-1 gap-2">
+          <input id="quickTitle" type="text" placeholder="Title (e.g., Youth Choir Practice)" class="border border-green-200 rounded-lg px-3 py-2 focus-soft">
+          <input id="quickTime" type="text" placeholder="Time (e.g., 6:00 PM)" class="border border-green-200 rounded-lg px-3 py-2 focus-soft">
+          <select id="quickCategory" class="border border-green-200 rounded-lg px-3 py-2 focus-soft">
+            <option value="">Category (optional)</option>
+          </select>
+          <div class="flex gap-2">
+            <button id="quickAdd" class="px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 flex-1">Add to Selected</button>
+            <button id="quickClear" class="px-3 py-2 rounded-lg bg-white text-green-700 border border-green-200 hover:bg-green-50">Clear</button>
+          </div>
+          <p class="text-xs text-gray-500">Select a day on the calendar first. You can edit or remove items later.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="mt-10 text-center text-xs text-green-800/70">
+      Made by Tintin Basa (Media Team Head)
+    </footer>
+  </main>
+
+  <!-- Context Menu -->
+  <div id="contextMenu" class="hidden fixed z-50 bg-white border border-green-200 rounded-lg shadow-lg p-2 text-sm">
+    <button data-action="edit" class="block w-full text-left px-3 py-2 rounded-md hover:bg-green-50">Edit</button>
+    <button data-action="copy" class="block w-full text-left px-3 py-2 rounded-md hover:bg-green-50">Copy</button>
+    <button data-action="cut" class="block w-full text-left px-3 py-2 rounded-md hover:bg-green-50">Cut</button>
+    <button data-action="delete" class="block w-full text-left px-3 py-2 rounded-md text-red-600 hover:bg-red-50">Delete</button>
+  </div>
+
+  <script>
+    const START = new Date(2025, 8, 1);
+    const END = new Date(2026, 7, 31);
+
+    const defaultCategories = [
+      { key: 'birthday', name: 'Birthday', color: '#f59e0b' },
+      { key: 'service', name: 'Service', color: '#16a34a' },
+      { key: 'meeting', name: 'Meeting', color: '#3b82f6' },
+      { key: 'practice', name: 'Practice', color: '#8b5cf6' },
+      { key: 'mission', name: 'Mission', color: '#ef4444' },
+      { key: 'etc', name: 'Speaker', color: '#ec4899' }
+    ];
+
+    let categories = JSON.parse(localStorage.getItem('rccg_categories') || 'null') || defaultCategories;
+    let current = new Date(START);
+    let clipboardMonth = null;
+    let selectedDayKey = null;
+    let contextTarget = null;
+
+    const KEY_EVENTS = 'rccg_events';
+    const KEY_NOTES = 'rccg_notes';
+    const KEY_WEEKLY = 'rccg_weekly';
+
+    const loadEvents = () => JSON.parse(localStorage.getItem(KEY_EVENTS) || '{}');
+    const saveEvents = (obj) => localStorage.setItem(KEY_EVENTS, JSON.stringify(obj));
+    const loadNotes = () => JSON.parse(localStorage.getItem(KEY_NOTES) || '{}');
+    const saveNotes = (obj) => localStorage.setItem(KEY_NOTES, JSON.stringify(obj));
+    const loadWeekly = () => JSON.parse(localStorage.getItem(KEY_WEEKLY) || '{}');
+    const saveWeekly = (obj) => localStorage.setItem(KEY_WEEKLY, JSON.stringify(obj));
+
+    const pad = (n) => String(n).padStart(2,'0');
+    const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+    function buildMonthOptions() {
+      const sel = document.getElementById('monthSelect');
+      sel.innerHTML = '';
+      let i = new Date(START);
+      while (i <= END) {
+        const opt = document.createElement('option');
+        opt.value = `${i.getFullYear()}-${pad(i.getMonth()+1)}`;
+        opt.textContent = i.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+        sel.appendChild(opt);
+        i.setMonth(i.getMonth()+1);
+      }
+    }
+
+    function renderLegend() {
+      const legend = document.getElementById('legend');
+      legend.innerHTML = '';
+      const quickSelect = document.getElementById('quickCategory');
+      quickSelect.innerHTML = '<option value=\"\">Category (optional)</option>';
+
+      categories.forEach(cat => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-2';
+        row.innerHTML = `
+          <div class="w-4 h-4 rounded-full" style="background:${cat.color}"></div>
+          <div class="flex-1 text-gray-700">${cat.name}</div>
+          <input type="color" value="${cat.color}" title="Pick color" class="w-9 h-7 rounded border border-green-200 bg-white"/>
+          <div class="tag text-xs px-2 py-1 rounded-md border" draggable="true" 
+               style="border-color:${cat.color}; color:${cat.color}" data-cat="${cat.key}">
+            ${cat.name}
+          </div>
+        `;
+        row.querySelector('input[type="color"]').addEventListener('input', (e) => {
+          cat.color = e.target.value;
+          localStorage.setItem('rccg_categories', JSON.stringify(categories));
+          renderCalendar(); renderLegend();
+        });
+        const tag = row.querySelector('.tag');
+        tag.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'category', key: cat.key }));
+        });
+        legend.appendChild(row);
+
+        const opt = document.createElement('option');
+        opt.value = cat.key; opt.textContent = cat.name; quickSelect.appendChild(opt);
+      });
+
+      document.getElementById('resetColors').onclick = () => {
+        categories = JSON.parse(JSON.stringify(defaultCategories));
+        localStorage.setItem('rccg_categories', JSON.stringify(categories));
+        renderLegend(); renderCalendar();
+      };
+    }
+
+    function renderCalendar() {
+      const grid = document.getElementById('calendarGrid');
+      const label = document.getElementById('monthLabel');
+      const notes = loadNotes();
+      const events = loadEvents();
+
+      const year = current.getFullYear();
+      const month = current.getMonth();
+      const first = new Date(year, month, 1);
+      const last = new Date(year, month + 1, 0);
+      const startDay = first.getDay();
+      const totalCells = Math.ceil((startDay + last.getDate()) / 7) * 7;
+
+      label.textContent = first.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+      document.getElementById('monthSelect').value = `${year}-${pad(month+1)}`;
+
+      grid.innerHTML = '';
+      for (let i = 0; i < totalCells; i++) {
+        const cellDate = new Date(year, month, i - startDay + 1);
+        const inMonth = cellDate.getMonth() === month;
+        const key = ymd(cellDate);
+
+        const cell = document.createElement('div');
+        cell.className = `rounded-xl p-2 md:p-3 border ${inMonth ? 'border-green-100 bg-white' : 'border-transparent bg-green-50/40 text-gray-400'} min-h-[110px] md:min-h-[130px] flex flex-col`;
+        cell.dataset.key = key;
+
+        const head = document.createElement('div');
+        head.className = 'flex items-center justify-between';
+        head.innerHTML = `
+          <div class="text-xs font-semibold ${inMonth ? 'text-green-800' : 'text-gray-400'}">${cellDate.getDate()}</div>
+          <div class="flex items-center gap-1">
+            <button class="selectDay text-[11px] px-2 py-1 rounded-md ${selectedDayKey===key ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'}">Select</button>
+            <button class="addLine text-[11px] px-2 py-1 rounded-md bg-white text-green-700 border border-green-200 hover:bg-green-50">Add</button>
+          </div>
+        `;
+        cell.appendChild(head);
+
+        const list = document.createElement('div');
+        list.className = 'mt-2 flex flex-col gap-1';
+        const dayItems = (events[key] || []).sort((a,b)=> (a.time||'').localeCompare(b.time||''));
+        dayItems.forEach((item, idx) => {
+          const color = (categories.find(c=>c.key===item.category)||{}).color || '#16a34a';
+          const pill = document.createElement('div');
+          pill.className = 'fade-in group flex items-start gap-2 rounded-lg border px-2 py-1 bg-white';
+          pill.style.borderColor = color;
+          pill.dataset.idx = idx;
+
+          const dot = document.createElement('div');
+          dot.className = 'w-2 h-2 rounded-full mt-1.5';
+          dot.style.background = color;
+
+          const textWrap = document.createElement('div');
+          textWrap.className = 'flex-1 text-xs text-gray-700';
+          const timePart = item.time ? `<span class="font-semibold text-green-800">${item.time}</span> — ` : '';
+          const catName = categories.find(c=>c.key===item.category)?.name || '';
+          textWrap.innerHTML = `
+            <div>${timePart}${escapeHTML(item.title||'')}</div>
+            <div class="text-[11px] text-gray-500">${catName}</div>
+          `;
+
+          const menuBtn = document.createElement('button');
+          menuBtn.className = 'text-[11px] px-2 py-1 rounded-md bg-green-50 text-green-700 border border-green-200 hover:bg-green-100';
+          menuBtn.textContent = '•••';
+          menuBtn.addEventListener('click', (e) => openContextMenu(e, cell, pill, key, idx));
+
+          pill.addEventListener('dblclick', () => editItemInline(cell, pill, key, idx));
+
+          pill.appendChild(dot); pill.appendChild(textWrap); pill.appendChild(menuBtn);
+          list.appendChild(pill);
+        });
+        cell.appendChild(list);
+
+        cell.addEventListener('dragover', (e) => { e.preventDefault(); cell.classList.add('ring-2','ring-green-300'); });
+        cell.addEventListener('dragleave', () => { cell.classList.remove('ring-2','ring-green-300'); });
+        cell.addEventListener('drop', (e) => {
+          e.preventDefault(); cell.classList.remove('ring-2','ring-green-300');
+          const data = e.dataTransfer.getData('text/plain');
+          try {
+            const payload = JSON.parse(data);
+            if (payload.type === 'category') {
+              addEventToDay(key, { title: 'New item', time: '', category: payload.key });
+              renderCalendar();
+            }
+          } catch {}
+        });
+
+        cell.addEventListener('dblclick', (e) => {
+          if (e.target.closest('.group')) return;
+          addEventToDay(key, { title: '', time: '', category: '' });
+          renderCalendar();
+          const pills = cell.querySelectorAll('.group');
+          const lastIdx = pills.length - 1;
+          if (lastIdx >= 0) editItemInline(cell, pills[lastIdx], key, lastIdx);
+        });
+
+        head.querySelector('.selectDay').addEventListener('click', () => { selectedDayKey = key; renderCalendar(); });
+        head.querySelector('.addLine').addEventListener('click', () => {
+          addEventToDay(key, { title: '', time: '', category: '' });
+          renderCalendar();
+          const pills = cell.querySelectorAll('.group');
+          const lastIdx = pills.length - 1;
+          if (lastIdx >= 0) editItemInline(cell, pills[lastIdx], key, lastIdx);
+        });
+
+        if (!inMonth) { cell.style.opacity = 0.7; }
+        grid.appendChild(cell);
+      }
+
+      const mKey = `${year}-${pad(month+1)}`;
+      document.getElementById('monthlyNotes').innerHTML = notes[mKey] || '';
+    }
+
+    function addEventToDay(key, item) {
+      const events = loadEvents();
+      if (!events[key]) events[key] = [];
+      events[key].push({ title: item.title || '', time: item.time || '', category: item.category || '' });
+      saveEvents(events);
+    }
+    function updateEvent(key, idx, item) {
+      const events = loadEvents(); if (!events[key]) return;
+      events[key][idx] = { ...events[key][idx], ...item }; saveEvents(events);
+    }
+    function deleteEvent(key, idx) {
+      const events = loadEvents(); if (!events[key]) return;
+      events[key].splice(idx,1); saveEvents(events);
+    }
+    function copyEvent(key, idx) {
+      const events = loadEvents(); if (!events[key]) return null;
+      return JSON.parse(JSON.stringify(events[key][idx]));
+    }
+
+    function editItemInline(cell, pill, key, idx) {
+      const events = loadEvents();
+      const item = events[key]?.[idx] || { title:'', time:'', category:'' };
+      const editor = document.createElement('div');
+      editor.className = 'mt-1 border border-green-200 rounded-lg p-2 bg-green-50';
+      editor.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-2">
+          <input type="text" class="md:col-span-3 border border-green-200 rounded-lg px-2 py-1 focus-soft" placeholder="Title" value="${escapeAttr(item.title)}">
+          <input type="text" class="md:col-span-2 border border-green-200 rounded-lg px-2 py-1 focus-soft" placeholder="Time (e.g., 10:00 AM)" value="${escapeAttr(item.time)}">
+          <select class="md:col-span-1 border border-green-200 rounded-lg px-2 py-1 focus-soft">
+            <option value="">No Category</option>
+            ${categories.map(c=>`<option value="${c.key}" ${c.key===item.category?'selected':''}>${c.name}</option>`).join('')}
+          </select>
+        </div>
+        <div class="mt-2 flex gap-2">
+          <button class="save px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700">Save</button>
+          <button class="cancel px-3 py-1.5 rounded-lg bg-white text-green-700 border border-green-200 hover:bg-green-50">Cancel</button>
+          <button class="remove px-3 py-1.5 rounded-lg bg-white text-red-600 border border-red-200 hover:bg-red-50 ml-auto">Delete</button>
+        </div>
+      `;
+      pill.innerHTML = ''; pill.appendChild(editor);
+
+      const [titleInput, timeInput, sel] = editor.querySelectorAll('input, select');
+      editor.querySelector('.save').addEventListener('click', () => { updateEvent(key, idx, { title: titleInput.value.trim(), time: timeInput.value.trim(), category: sel.value }); renderCalendar(); });
+      editor.querySelector('.cancel').addEventListener('click', () => renderCalendar());
+      editor.querySelector('.remove').addEventListener('click', () => { deleteEvent(key, idx); renderCalendar(); });
+    }
+
+    function openContextMenu(e, cell, pill, key, idx) {
+      e.stopPropagation();
+      const menu = document.getElementById('contextMenu');
+      contextTarget = { cell, pill, key, idx };
+      menu.style.left = e.clientX + 'px'; menu.style.top = e.clientY + 'px';
+      menu.classList.remove('hidden');
+    }
+    function closeContextMenu() { document.getElementById('contextMenu').classList.add('hidden'); contextTarget = null; }
+    document.addEventListener('click', closeContextMenu);
+    document.getElementById('contextMenu').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const action = e.target.getAttribute('data-action');
+      if (!contextTarget || !action) return;
+      const { key, idx } = contextTarget;
+      if (action === 'edit') editItemInline(contextTarget.cell, contextTarget.pill, key, idx);
+      if (action === 'copy') { const item = copyEvent(key, idx); if (item) { navigator.clipboard.writeText(`${item.time ? item.time+' - ' : ''}${item.title}`); toast('Copied text to clipboard'); } }
+      if (action === 'cut') { const item = copyEvent(key, idx); if (item) { navigator.clipboard.writeText(`${item.time ? item.time+' - ' : ''}${item.title}`); deleteEvent(key, idx); renderCalendar(); toast('Cut and removed'); } }
+      if (action === 'delete') { deleteEvent(key, idx); renderCalendar(); toast('Deleted'); }
+      closeContextMenu();
+    });
+
+    function clampDateWithinRange(d) { if (d < START) return new Date(START); if (d > END) return new Date(END.getFullYear(), END.getMonth(), 1); return d; }
+    function gotoMonth(year, monthZero) { current = clampDateWithinRange(new Date(year, monthZero, 1)); renderCalendar(); }
+
+    document.getElementById('rangeStartBtn').onclick = () => gotoMonth(START.getFullYear(), START.getMonth());
+    document.getElementById('rangeEndBtn').onclick = () => gotoMonth(END.getFullYear(), END.getMonth());
+
+    document.getElementById('prevMonth').onclick = () => { current.setMonth(current.getMonth()-1); current = clampDateWithinRange(current); renderCalendar(); };
+    document.getElementById('nextMonth').onclick = () => { current.setMonth(current.getMonth()+1); current = clampDateWithinRange(current); renderCalendar(); };
+    document.getElementById('todayBtn').onclick = () => { const today = new Date(); const t = (today >= START && today <= END) ? today : START; gotoMonth(t.getFullYear(), t.getMonth()); };
+
+    document.getElementById('mPrev').onclick = () => { current.setMonth(current.getMonth()-1); current = clampDateWithinRange(current); renderCalendar(); };
+    document.getElementById('mNext').onclick = () => { current.setMonth(current.getMonth()+1); current = clampDateWithinRange(current); renderCalendar(); };
+
+    document.getElementById('monthSelect').addEventListener('change', (e) => { const [y,m] = e.target.value.split('-').map(Number); gotoMonth(y, m-1); });
+
+    function bindNotes() {
+      const area = document.getElementById('monthlyNotes');
+      area.addEventListener('input', () => {
+        const notes = loadNotes(); const mKey = `${current.getFullYear()}-${pad(current.getMonth()+1)}`;
+        notes[mKey] = area.innerHTML; saveNotes(notes);
+      });
+      document.getElementById('copyNotes').onclick = async () => { await navigator.clipboard.writeText(area.innerText); toast('Notes copied'); };
+      document.getElementById('clearNotes').onclick = () => {
+        area.innerHTML = ''; const notes = loadNotes(); const mKey = `${current.getFullYear()}-${pad(current.getMonth()+1)}`; delete notes[mKey]; saveNotes(notes);
+      };
+    }
+
+    function bindQuickAdd() {
+      document.getElementById('quickAdd').onclick = () => {
+        if (!selectedDayKey) { toast('Please select a day first'); return; }
+        const title = document.getElementById('quickTitle').value.trim();
+        const time = document.getElementById('quickTime').value.trim();
+        const category = document.getElementById('quickCategory').value;
+        if (!title) { toast('Please enter a title'); return; }
+        addEventToDay(selectedDayKey, { title, time, category }); renderCalendar();
+      };
+      document.getElementById('quickClear').onclick = () => {
+        document.getElementById('quickTitle').value = '';
+        document.getElementById('quickTime').value = '';
+        document.getElementById('quickCategory').value = '';
+      };
+    }
+
+    function bindMonthActions() {
+      document.getElementById('copyMonth').onclick = () => { clipboardMonth = snapshotMonth(); toast('Month copied'); };
+      document.getElementById('pasteMonth').onclick = () => {
+        if (!clipboardMonth) { toast('Nothing to paste'); return; }
+        applySnapshotToCurrent(clipboardMonth); renderCalendar(); toast('Month pasted');
+      };
+      document.getElementById('clearMonth').onclick = () => {
+        const events = loadEvents(); const prefix = `${current.getFullYear()}-${pad(current.getMonth()+1)}-`;
+        Object.keys(events).forEach(k => { if (k.startsWith(prefix)) delete events[k]; });
+        saveEvents(events); renderCalendar();
+      };
+      document.getElementById('printBtn').onclick = () => window.print();
+      document.getElementById('exportJSON').onclick = () => {
+        const exportObj = { categories, events: loadEvents(), notes: loadNotes(), weekly: loadWeekly() };
+        const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'rccg-divine-mercy-planner.json'; a.click();
+        URL.revokeObjectURL(url);
+      };
+      document.getElementById('importJSON').onclick = async () => {
+        const input = document.createElement('input'); input.type = 'file'; input.accept = 'application/json';
+        input.onchange = async () => {
+          const file = input.files[0]; if (!file) return;
+          const text = await file.text();
+          try {
+            const data = JSON.parse(text);
+            if (data.categories) { categories = data.categories; localStorage.setItem('rccg_categories', JSON.stringify(categories)); }
+            if (data.events) saveEvents(data.events);
+            if (data.notes) saveNotes(data.notes);
+            if (data.weekly) saveWeekly(data.weekly);
+            renderLegend(); renderCalendar(); toast('Imported successfully');
+          } catch { toast('Import failed'); }
+        };
+        input.click();
+      };
+    }
+
+    function snapshotMonth() {
+      const events = loadEvents();
+      const prefix = `${current.getFullYear()}-${pad(current.getMonth()+1)}-`;
+      const out = {}; Object.keys(events).forEach(k => { if (k.startsWith(prefix)) out[k] = events[k]; });
+      return out;
+    }
+    function applySnapshotToCurrent(snap) {
+      const events = loadEvents();
+      const prefix = `${current.getFullYear()}-${pad(current.getMonth()+1)}-`;
+      Object.keys(events).forEach(k => { if (k.startsWith(prefix)) delete events[k]; });
+      Object.assign(events, snap); saveEvents(events);
+    }
+
+    function bindWeekly() {
+      const weekly = loadWeekly();
+      const ids = ['tmpl_wed','tmpl_thu','tmpl_workers','tmpl_teacher','tmpl_presider','tmpl_speaker'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        el.innerHTML = weekly[id] || '';
+        el.addEventListener('input', () => { const w = loadWeekly(); w[id] = el.innerHTML; saveWeekly(w); });
+      });
+
+      document.getElementById('autoFillMonth').onclick = () => {
+        const w = loadWeekly(); const y = current.getFullYear(); const m = current.getMonth();
+        const daysInMonth = new Date(y, m+1, 0).getDate();
+        const events = loadEvents();
+
+        for (let d=1; d<=daysInMonth; d++) {
+          const dateObj = new Date(y, m, d); const key = ymd(dateObj); const dow = dateObj.getDay();
+          if (!events[key]) events[key] = [];
+
+          if (dow === 3 && stripHTML(w['tmpl_wed'])) {
+            events[key].push({ title: `Digging Deep — ${stripHTML(w['tmpl_wed'])}`, time: '', category: 'service' });
+          }
+          if (dow === 4 && stripHTML(w['tmpl_thu'])) {
+            events[key].push({ title: `Faith Clinic — ${stripHTML(w['tmpl_thu'])}`, time: '', category: 'service' });
+          }
+          if (dow === 0) {
+            if (stripHTML(w['tmpl_workers'])) events[key].push({ title: `Workers' Prayer — ${stripHTML(w['tmpl_workers'])}`, time: '', category: 'meeting' });
+            if (stripHTML(w['tmpl_teacher'])) events[key].push({ title: `Sunday School Teacher — ${stripHTML(w['tmpl_teacher'])}`, time: '', category: 'service' });
+            if (stripHTML(w['tmpl_presider'])) events[key].push({ title: `Presider — ${stripHTML(w['tmpl_presider'])}`, time: '', category: 'service' });
+            if (stripHTML(w['tmpl_speaker'])) events[key].push({ title: `Sunday Service Speaker — ${stripHTML(w['tmpl_speaker'])}`, time: '', category: 'service' });
+          }
+        }
+        saveEvents(events); renderCalendar(); toast('Auto-filled this month');
+      };
+
+      document.getElementById('clearWeekly').onclick = () => {
+        saveWeekly({}); ['tmpl_wed','tmpl_thu','tmpl_workers','tmpl_teacher','tmpl_presider','tmpl_speaker'].forEach(id => { document.getElementById(id).innerHTML = ''; });
+        toast('Cleared weekly templates');
+      };
+    }
+
+    function toast(msg) {
+      const el = document.createElement('div');
+      el.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg bg-green-700 text-white text-sm shadow-lg fade-in';
+      el.textContent = msg; document.body.appendChild(el);
+      setTimeout(()=>{ el.remove(); }, 1800);
+    }
+
+    function escapeHTML(s) { return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+    function escapeAttr(s){ return escapeHTML(s).replace(/\n/g,' '); }
+    function stripHTML(html){ const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return (tmp.textContent || tmp.innerText || '').trim(); }
+
+    (function init(){
+      buildMonthOptions(); renderLegend(); bindNotes(); bindQuickAdd(); bindMonthActions(); bindWeekly();
+      current = new Date(START); renderCalendar();
+
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+          if (!selectedDayKey) return;
+          const events = loadEvents()[selectedDayKey] || [];
+          const text = events.map(it => `${it.time ? it.time+' - ' : ''}${it.title}`).join('\n');
+          navigator.clipboard.writeText(text); toast('Day copied');
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'x') {
+          if (!selectedDayKey) return;
+          const all = loadEvents(); const events = all[selectedDayKey] || [];
+          const text = events.map(it => `${it.time ? it.time+' - ' : ''}${it.title}`).join('\n');
+          navigator.clipboard.writeText(text); all[selectedDayKey] = []; saveEvents(all); renderCalendar(); toast('Day cut');
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+          if (!selectedDayKey) return;
+          navigator.clipboard.readText().then(text => {
+            const lines = text.split('\n').map(s=>s.trim()).filter(Boolean);
+            lines.forEach(line=>{
+              const parts = line.split(' - ');
+              if (parts.length >= 2) addEventToDay(selectedDayKey, { time: parts[0], title: parts.slice(1).join(' - '), category: '' });
+              else addEventToDay(selectedDayKey, { time: '', title: line, category: '' });
+            });
+            renderCalendar(); toast('Pasted into selected day');
+          });
+        }
+      });
+    })();
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97303df280ad4b09',t:'MTc1NTg0MzM5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
